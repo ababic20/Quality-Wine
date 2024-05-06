@@ -1,0 +1,399 @@
+---
+title: "Kvaliteta vina (Wine Quality)"
+author: "Mateja Žunec, Aleksandar Babić"
+date: "2024-05-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(readr)
+library(ggplot2)
+```
+
+## Ukratko o promatranom skupu podataka
+
+U ovom projektu analizirat će se dva skupa podataka za crveno i bijelo vino portugalskog proizvođača **Vinho Verde**. Zbog problema s privatnošću prikazane su samo fizikalno-kemijske i senzorne varijable (npr. nema podataka o vrstama grožda, marki vina i prodajnoj cijeni). 
+
+- Broj zapisa za crno vino: 1599
+- Broj zapisa za bijelo vino: 4898
+- Broj atributa: 12
+
+Atributi:
+
+1. **Fixed acidity** (Fiksna kiselost) - odnosi si se na mjeru ukupne kiselosti u vinu koja nije podložna promjenama tijekom vinskog procesa, poprima vrijednosti od 3,8 do 15,90.
+2. **Hlapljiva kiselost** (volatile acidity) - količina kiselih spojeva u vinu koja može ispariti tijekom procesa starenja ili konzumacije, poprima vrijednosti od 0,08 do 1,58.
+3. **Limunska kiselina (citric acid)** - kiselina prisutna u vinu koja može pridonijeti njegovoj voćnoj aromi i okusu, poprma vrijednosti od 0 do 1,66.
+4. **Preostali šećer (residual sugar)** - količina neproklijalog šećera koja ostaje u vinu nakon fermentacije te može utjecati na njegovu slatkoću,poprima vrijednosti od 0,6 do 65,8.
+5. **Kloridi (chlorides)** -  soli klora koje mogu biti prisutne u vinu, poprima vrijednosti od 0,00900 do 0,61100.
+6. **Slobodni sumporni dioksid (free sulfur dioxide)** - količina sumpornog dioksida koji nije vezan u molekule vina, a koji se dodaje kao konzervans i antioksidans poprima vrijednosti od 1 do 289.
+7. **Ukupni sumporni dioksid (total sulfur dioxide)** - ukupna količina sumpornog dioksida prisutnog u vinu, poprima vrijednosti od 6 do 440.
+8. **Gustoća (density)** - ukupna količina sumpornog dioksida prisutnog u vinu, poprima vrijednosti od 0,6 do 1,03.
+9. **pH (pH)** - mjera kiselosti ili lužnatosti vina, poprima vrijednosti od 2,720 do 4,010.
+10. **Sulfati (sulphates)** - soli sumporne kiseline koje mogu biti prisutne u vinu i koje mogu utjecati na njegovu stabilnost i konzerviranje, poprima vrijednosti od 0,22 do 2
+11. **Alkohol (alchol)** - količina alkohola prisutna u vinu, poprima vrijednosti od 8 do 14,9.
+12. **Kvaliteta (quality)** - numerička ocjena kvalitete vina, izražena na skali od 0 (vrlo loše) do 10 (odlično).
+
+
+Vrijednosti atributa koje nedostaju: Nema
+
+
+## Učitavanje podataka
+```{r warning=FALSE}
+winequality_red <- read_delim("winequality-red.csv", delim = ";")
+winequality_white <- read_delim("winequality-white.csv", delim = ";")
+```
+## Sažetak statističkih informacija o svakoj varijabli
+```{r warning=FALSE}
+summary(winequality_red)
+summary(winequality_white)
+```
+## Struktura varijabli
+```{r warning=FALSE}
+#Struktura objekta, tip svake varijable(u ovom slučaju su sve numeričke, prikaz prvih nekoliko vrijednosti, pregled strukture)
+#Sve su kvantitativne numeričke varijable.
+str(winequality_red)
+str(winequality_white)
+```
+## Provjera ima li nepotpunih vrijednosti za atribute
+```{r warning=FALSE}
+##Provjerava ima li nepotpunih vrijednosti kod varijabla, u ovom slučaju je FALSE znači nema
+any(is.na(winequality_red))
+any(is.na(winequality_white))
+```
+## Usporedba bijelog i crvenog vina na temelju nekoliko parametara
+Prema summary odabrano je nekoliko varijabli koje se razlikuju po aritmetičkoj sredini između bijelog i crvenog vina i na temelju tih podataka kreirani su grafovi (barplot) koji to vizualiziraju.
+Za to su uzete varijable: 
+
+1. residual sugar
+2. volatile acidity
+3. total sulfur dioxide
+
+Isto tako uzeta je i varijabla **quality** kod koje ne postoji značajna razlika između crvenog i bijelog vina što je isto vidljivo na grafu (barplot).
+
+```{r warning=FALSE}
+# Izračun prosječnih vrijednosti udjela šećera za bijelo i crveno vino
+mean_residual_sugar_white <- mean(winequality_white$`residual sugar`)
+mean_residual_sugar_red <- mean(winequality_red$`residual sugar`)
+
+# Stvaranje vektora s prosječnim vrijednostima
+means <- c(mean_residual_sugar_white, mean_residual_sugar_red)
+
+# Stvaranje vektora s imenima vrsta vina
+wine_types <- c("Bijelo vino", "Crveno vino")
+
+# Stvaranje histograma s prilagođenim skaliranjem y-osi
+barplot(means, names.arg = wine_types, 
+        col = c("#fcfcde", "#a32e61"), 
+        main = "Prosječna vrijednost residualnog šećera",
+        xlab = "Vrsta Vina",
+        ylab = "Prosječna vrijednost residualnog šećera",
+        ylim = c(0, 10))
+
+```
+
+```{r warning=FALSE}
+# Izračun prosječnih vrijednosti hlapljive kiselosti za bijelo i crveno vino
+mean_volatile_acidity_white <- mean(winequality_white$`volatile acidity`)
+mean_volatile_acidity_red <- mean(winequality_red$`volatile acidity`)
+
+# Stvaranje vektora s prosječnim vrijednostima
+means_volatile_acidity <- c(mean_volatile_acidity_white, mean_volatile_acidity_red)
+
+# Stvaranje histograma s prilagođenim skaliranjem y-osi
+barplot(means_volatile_acidity, names.arg = wine_types, 
+        col = c("#fcfcde", "#a32e61ed"), 
+        main = "Prosječna vrijednost hlapljive kiselosti",
+        xlab = "Vrsta Vina",
+        ylab = "Prosječna vrijednost hlapljive kiselosti",
+        ylim = c(0, 1))
+
+```
+
+```{r warning=FALSE}
+# Izračun prosječnih vrijednosti ukupnog sumpornog dioksida za bijelo i crveno vino
+mean_total_sulfur_dioxide_white <- mean(winequality_white$`total sulfur dioxide`)
+mean_total_sulfur_dioxide_red <- mean(winequality_red$`total sulfur dioxide`)
+
+# Stvaranje vektora s prosječnim vrijednostima
+means_total_sulfur_dioxide <- c(mean_total_sulfur_dioxide_white, mean_total_sulfur_dioxide_red)
+
+# Stvaranje histograma s prilagođenim skaliranjem y-osi
+barplot(means_total_sulfur_dioxide, names.arg = wine_types, 
+        col = c("#fcfcde", "#a32e61"), 
+        main = "Prosječna vrijednost ukupnog sumpornog dioksida",
+        xlab = "Vrsta Vina",
+        ylab = "Prosječna vrijednost ukupnog sumpornog dioksida",
+        ylim = c(0, 200))
+```
+
+```{r warning=FALSE}
+# Izračunaj prosječnu vrijednost kvalitete za crveno i bijelo vino
+avg_quality_red <- mean(winequality_red$quality)
+avg_quality_white <- mean(winequality_white$quality)
+
+# Definiraj vektore za kvalitetu i boje
+quality <- c("Bijelo", "Crveno")
+avg_quality <- c(avg_quality_white, avg_quality_red)
+colors <- c("#fcfcde", "#a32e61")
+
+# Napravi barplot
+barplot(avg_quality, names.arg = quality, col = colors, main = "Usporedba prosječne kvalitete bijelog i crvenog",
+        xlab = "Vrsta Vina", ylab = "Prosječna Kvaliteta")
+```
+
+Najveći broj vina ima udio od 9% alkohola kod obe vrste vina, distribucije su asimetrične.
+```{r warning=FALSE}
+par(mfrow=c(2,1))
+hist(winequality_red$alcohol, main="Udio alkohola u crvenom vinu", xlab="Alkohol (%)",  col = "#a32e61")
+hist(winequality_white$alcohol, main="Udio alkohola u bijelom vinu", xlab="Alkohol (%)", col="#fcfcde")
+```
+
+
+
+
+```{r warning=FALSE}
+# Izračun prosječnih vrijednosti udjela šećera za bijelo i crveno vino
+mean_residual_sugar_white <- mean(winequality_white$`residual sugar`)
+mean_residual_sugar_red <- mean(winequality_red$`residual sugar`)
+
+# Stvaranje vektora s prosječnim vrijednostima
+means <- c(mean_residual_sugar_white, mean_residual_sugar_red)
+
+# Stvaranje vektora s imenima vrsta vina
+wine_types <- c("White Wine", "Red Wine")
+
+# Box plot za crveno vino
+boxplot_red <- ggplot(data = winequality_red, aes(x = "", y = `residual sugar`)) +
+  geom_boxplot(fill = "#a32e61", alpha = 0.7) +
+  labs(title = "Box Plot za Residual Sugar u Crvenom Vinu",
+       x = "",
+       y = "Residual Sugar") +
+  theme_minimal()
+
+# Box plot za bijelo vino
+boxplot_white <- ggplot(data = winequality_white, aes(x = "", y = `residual sugar`)) +
+  geom_boxplot(fill = "#fcfcde", alpha = 0.7) +
+  labs(title = "Box Plot za Residual Sugar u Bijelom Vinu",
+       x = "",
+       y = "Residual Sugar") +
+  theme_minimal()
+
+# Prikaz box plotova
+boxplot_red
+boxplot_white
+```
+
+
+## Izračun korelacije varijabli za crveno i bijelo vino
+```{r warning=FALSE}
+
+# Izračun korelacije za crveno vino
+cor_red <- cor(winequality_red)
+
+# Izračun korelacije za bijelo vino
+cor_white <- cor(winequality_white)
+
+# Prikazivanje korelacije za crveno vino
+print("Korelacija za crveno vino:")
+print(cor_red)
+
+# Prikazivanje korelacije za bijelo vino
+print("Korelacija za bijelo vino:")
+print(cor_white)
+
+# Definiranje DataFrame objekata za korelaciju
+cor_data_red <- as.data.frame(as.table(cor_red))
+cor_data_white <- as.data.frame(as.table(cor_white))
+
+# Promjena imena stupaca
+names(cor_data_red) <- c("Var1", "Var2", "Freq")
+names(cor_data_white) <- c("Var1", "Var2", "Freq")
+```
+## Grafički prikaz korelacije između varijabli za crveno i bijelo vino
+Korelacijski koeficijent mjeri stupanj linearnog odnosa između dviju varijabli. Ako je korelacijski koeficijent bliži 1 (bilo pozitivnoj ili negativnoj vrijednosti), to ukazuje na jači linearni odnos između varijabli.
+
+1. Korelacijski koeficijent blizu 1 ukazuje na pozitivnu linearnu korelaciju, što znači da kako jedna varijabla raste, tako raste i druga.
+2. Korelacijski koeficijent blizu -1 ukazuje na negativnu linearnu korelaciju, što znači da kako jedna varijabla raste, druga opada.
+3. Korelacijski koeficijent blizu 0 ukazuje na slabu ili nikakvu linearnu korelaciju između varijabli.
+
+Dakle, iz prikaza za crveno vino može se zaključiti da postoji pozitivna linearna povezanost između varijabli:
+          
+          density - fixed acidity
+          citric acid - fixed acidity
+          total sulfur dioxide - free sulfur dioxide
+A za negativnu linearnu povezanost:
+
+          pH - fixed acidity
+          citrix acid - volatile acidity
+          pH - citrix acid
+[NAPOMENA] - na grafu su označene vrijednosti samo za slučajeve gdje je korelacija veća od 0,5 ili manja od -0,5.          
+```{r warning=FALSE}
+# Stvaranje točkastog grafikona za crveno vino s promijenjenom širinom
+ggplot(cor_data_red, aes(x = Var1, y = Var2, color = Freq, label = ifelse(abs(Freq) > 0.5, round(Freq, 2), ""))) +
+  geom_point(size = 3) +
+  geom_text(aes(label=ifelse(abs(Freq) > 0.5, round(Freq, 2), "")), hjust=-0.2, vjust=0.2, size=3) +
+  scale_color_gradient(low = "black", high = "red") +
+  labs(title = "Korelacija varijabli - Crveno Vino",
+       x = "Varijabla 1",
+       y = "Varijabla 2")
+ggsave("correlation_red.png", width = 15)
+```
+Što se tiče bijelog vina može se zaključiti da postoji pozitivna linearna povezanost između varijabli:
+          
+          density - residual sugar
+          density - total sulfur dioxide
+          total sulfur dioxide - free sulfur dioxide
+A za negativnu linearnu povezanost:
+
+         alcohol - density
+```{r warning=FALSE}
+# Stvaranje točkastog grafikona za bijelo vino s promijenjenom širinom
+ggplot(cor_data_white, aes(x = Var1, y = Var2, color = Freq, label = ifelse(abs(Freq) > 0.5, round(Freq, 2), ""))) +
+  geom_point(size = 3) +
+  geom_text(aes(label=ifelse(abs(Freq) > 0.5, round(Freq, 2), "")), hjust=-0.2, vjust=0.2, size=3) +
+  scale_color_gradient(low = "black", high = "red") +
+  labs(title = "Korelacija varijabli - Bijelo Vino",
+       x = "Varijabla 1",
+       y = "Varijabla 2")
+
+# Spremanje grafova u datoteke
+ggsave("correlation_white.png", width = 15)
+```
+## T-test Usporedba koncentracije sulfata i pH vrijednosti
+
+### Usporedba koncentracije sulfata:
+
+**Jasnoća hipoteza**: Testiramo da li postoji razlika u prosječnoj koncentraciji sulfata između crvenog i bijelog vina.
+
+**Nulta hipoteza (H0)**: Prosječna koncentracija sulfata u crvenom vinu jednaka je prosječnoj koncentraciji sulfata u bijelom vinu (μ_crveno = μ_bijelo).
+
+**Alternativna hipoteza (H1)**: Prosječna koncentracija sulfata u crvenom vinu nije jednaka prosječnoj koncentraciji sulfata u bijelom vinu (μ_crveno ≠ μ_bijelo).
+
+**Interpretacija rezultata**: Dobiveni rezultati t-testa pokazuju statistički značajnu razliku (p-vrijednost < 0.05) u prosječnoj koncentraciji sulfata između crvenog i bijelog vina. Prosječna koncentracija sulfata u crvenom vinu (0.658 g/L) statistički je značajno veća od prosječne koncentracije sulfata u bijelom vinu (0.490 g/L). Ovo može ukazivati na razlike u proizvodnom procesu ili sastavu grožđa između crvenog i bijelog vina. 
+
+```{r}
+# Provjera normalnosti podataka pomoću Shapiro-Wilk testa
+shapiro_test_red <- shapiro.test(winequality_red$sulphates)
+shapiro_test_white <- shapiro.test(winequality_white$sulphates)
+
+# Ispis rezultata testiranja
+print("Rezultat Shapiro-Wilk testa za crveno vino:")
+print(shapiro_test_red)
+
+print("Rezultat Shapiro-Wilk testa za bijelo vino:")
+print(shapiro_test_white)
+```
+Testna statistika (W): Testna statistika (W) u ovom slučaju iznosi 6509961.
+
+P-vrijednost: P-vrijednost koju dobivate (< 2.2e-16) sugerira da postoji iznimno mala vjerojatnost da se razlika između srednjih vrijednosti koncentracije sulfata u crvenom i bijelom vinu može pripisati slučajnosti. Stoga je p-vrijednost vrlo niska, što znači da su rezultati statistički značajni.
+
+**Alternativna hipoteza**: Alternativna hipoteza, koja kaže da stvarna promjena mjesta (true location shift) nije jednaka 0, sugerira da postoji značajna razlika između srednjih vrijednosti koncentracije sulfata u crvenom i bijelom vinu. Znači odbacuje se H0 hipoteza i prihvaća se H1 hipoteza.
+```{r}
+# Izvođenje Wilcoxonovog rang-sum testa (Mann-Whitney U test)
+wilcox_test <- wilcox.test(winequality_red$sulphates, winequality_white$sulphates)
+print("Rezultat Wilcoxonovog rang-sum testa:")
+print(wilcox_test)
+```
+```{r}
+# Q-Q dijagram za crveno vino
+qqnorm(winequality_red$sulphates)
+qqline(winequality_red$sulphates, col = "red")
+
+# Dodavanje naslova i oznaka osi
+title(main = "Q-Q Dijagram za Koncentraciju Sulfata - Crveno Vino")
+xlabel <- expression("Teoretski kvantili")
+ylabel <- expression("Opservirani kvantili")
+title(xlab = xlabel, ylab = ylabel)
+
+# Q-Q dijagram za bijelo vino
+qqnorm(winequality_white$sulphates)
+qqline(winequality_white$sulphates, col = "blue")
+
+# Dodavanje naslova i oznaka osi
+title(main = "Q-Q Dijagram za Koncentraciju Sulfata - Bijelo Vino")
+xlabel <- expression("Teoretski kvantili")
+ylabel <- expression("Opservirani kvantili")
+title(xlab = xlabel, ylab = ylabel)
+```
+
+
+
+```{r}
+# T-test za usporedbu prosječne koncentracije sulfata između crvenog i bijelog vina
+t_test_sulphates <- t.test(winequality_red$sulphates, winequality_white$sulphates)
+print("Rezultat t-testa za usporedbu prosječne koncentracije sulfata između crvenog i bijelog vina:")
+print(t_test_sulphates)
+```
+
+**Jasnoća hipoteza:** Testiramo da li postoji razlika u prosječnoj pH vrijednosti između crvenog i bijelog vina.
+
+**Nulta hipoteza (H0):** Prosječna pH vrijednost crvenog vina jednaka je prosječnoj pH vrijednosti bijelog vina (μ_crveno = μ_bijelo).
+
+**Alternativna hipoteza (H1):** Prosječna pH vrijednost crvenog vina nije jednaka prosječnoj pH vrijednosti bijelog vina (μ_crveno ≠ μ_bijelo).
+
+**Interpretacija rezultata:*** Također, rezultati t-testa za pH vrijednost pokazuju nešto manju razliku nego u prethodnom primjeru ali i dalje statistički značajnu (p-vrijednost < 0.05) između crvenog i bijelog vina. Prosječna pH vrijednost crvenog vina (3.31) statistički je veća od prosječne pH vrijednosti bijelog vina (3.19). Ovo može ukazivati na različite kiselosti između crvenog i bijelog vina, što može biti važno za ukupni dojam okusa i senzorski profil vina. Znači odbacuje se H0 hipoteza i prihvaća se H1 hipoteza.
+```{r warning=FALSE}
+# T-test na temelju varijable pH za crveno i bijelo vino
+t_test_pH <- t.test(winequality_red$pH, winequality_white$pH)
+print("Rezultat t-testa za varijablu 'pH':")
+print(t_test_pH)
+```
+
+## HI-kvadrat test za kvalitetu vina
+
+H0 - Ne postoji povezanost između varijabli kvaliteta vina i ph vrijednost.
+
+H1 - Postoji povezanost između varijabli kvaliteta vina i ph vrijednost
+
+**Hi-kvadrat test za crveno vino**:
+
+**Rezultat testa**: P-vrijednost je 1, što znači da nema statistički značajne veze između kvalitete vina i kategorizirane varijable pH za crveno vino.
+
+**Interpretacija**: Na temelju rezultata hi-kvadrat testa, ne možemo odbaciti nultu hipotezu. To znači da kvaliteta crvenog vina nije statistički povezana s kategoriziranom pH vrijednošću.
+
+**Hi-kvadrat test za bijelo vino**:
+
+**Rezultat testa**: P-vrijednost je također 1, što ukazuje da nema statistički značajne veze između kvalitete vina i kategorizirane varijable pH za bijelo vino.
+
+**Interpretacija**: Slično crvenom vinu, ni za bijelo vino ne možemo odbaciti nultu hipotezu. To znači da kvaliteta bijelog vina nije statistički povezana s kategoriziranom pH vrijednošću.
+
+Ovi rezultati sugeriraju da kvaliteta vina (ocjena) nije povezana s kategoriziranom pH vrijednošću, barem u okviru ovog testiranja. To može ukazivati na to da pH nije ključan faktor koji određuje kvalitetu vina, ili da drugi čimbenici imaju veći utjecaj na konačnu ocjenu vina.
+```{r warning=FALSE}
+#Izračun prosječne kvalitete vina za crveno i bijelo vino
+avg_quality_red <- mean(winequality_red$quality)
+avg_quality_white <- mean(winequality_white$quality)
+
+# Hi-kvadrat test na temelju kvalitete vina i varijable pH za crveno i bijelo vino
+# Prvo moramo kategorizirati pH vrijednosti, na primjer, na nisku, srednju i visoku kiselinu
+bins <- c(0, 3, 7, 14)  # Definiramo intervale: [0, 3], (3, 7], (7, 14]
+labels <- c("Niska", "Srednja", "Visoka")  # Dodjeljujemo oznake intervalima
+
+# Kategoriziramo pH vrijednosti za crveno vino
+winequality_red$pH_category <- cut(winequality_red$pH, bins, labels = labels)
+
+# Kategoriziramo pH vrijednosti za bijelo vino
+winequality_white$pH_category <- cut(winequality_white$pH, bins, labels = labels)
+
+# Izračunaj prosječnu kvalitetu za svaku kategoriju pH za crveno vino
+quality_pH_red <- aggregate(quality ~ pH_category, data = winequality_red, FUN = mean)
+
+# Izračunaj prosječnu kvalitetu za svaku kategoriju pH za bijelo vino
+quality_pH_white <- aggregate(quality ~ pH_category, data = winequality_white, FUN = mean)
+
+# Hi-kvadrat test na temelju kvalitete vina i kategorizirane varijable pH za crveno vino
+chisq_pH_red <- chisq.test(quality_pH_red$quality, quality_pH_red$pH_category)
+print("Rezultat hi-kvadrat testa za kvalitetu vina i pH za crveno vino:")
+print(chisq_pH_red)
+
+# Hi-kvadrat test na temelju kvalitete vina i kategorizirane varijable pH za bijelo vino
+chisq_pH_white <- chisq.test(quality_pH_white$quality, quality_pH_white$pH_category)
+print("Rezultat hi-kvadrat testa za kvalitetu vina i pH za bijelo vino:")
+print(chisq_pH_white)
+```
+
+
+
+
+
